@@ -79,16 +79,21 @@ class MessageResponse(BaseModel):
 
 # 模拟访问线程函数
 def run_simulation(task_id: str, db: Session):
+    print(f"开始执行模拟访问任务: {task_id}")
     # 获取任务
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
+        print(f"任务不存在: {task_id}")
         return
+    
+    print(f"获取任务成功: {task_id}, URL: {task.url}")
     
     # 初始化配置
     config = Config()
     
     # 检查URL是否有效
     if not config.set_url(task.url):
+        print(f"无效的URL: {task.url}")
         task.status = TaskStatus.FAILED
         task_result = TaskResult(
             task_id=task.id,
@@ -98,7 +103,6 @@ def run_simulation(task_id: str, db: Session):
         )
         db.add(task_result)
         db.commit()
-        db.refresh(task)
         return
     
     config.set_interval(task.min_interval, task.max_interval)
@@ -107,13 +111,24 @@ def run_simulation(task_id: str, db: Session):
     config.set_retries(task.retries)
     config.set_retry_delay(task.retry_delay)
     
+    print(f"配置初始化完成，开始创建模拟器实例")
     simulator = AccessSimulator(config)
+    
+    print(f"模拟器实例创建成功，开始执行模拟访问，共 {task.count} 次")
     
     try:
         for i in range(1, task.count + 1):
+            print(f"第 {i} 次访问，当前计数: 成功={simulator.success_count}, 失败={simulator.fail_count}")
             interval = simulator.get_random_interval()
+            print(f"等待 {interval} 秒后访问 {config.url}")
             time.sleep(interval)
+            print(f"开始发送请求")
             success, status_code, message = simulator.make_request()
+            print(f"请求完成: {message}")
+            
+            # 每次请求后直接更新数据库中的任务状态，不使用对象属性更新
+            success_count = simulator.success_count
+            fail_count = simulator.fail_count
             
             # 创建任务结果
             result_status = ResultStatus.SUCCESS if success else ResultStatus.FAILURE
@@ -125,15 +140,38 @@ def run_simulation(task_id: str, db: Session):
             )
             db.add(task_result)
             
-            # 更新任务状态
-            task.success_count = simulator.success_count
-            task.fail_count = simulator.fail_count
+            # 显式更新数据库中的任务状态和计数
+            db.query(Task).filter(Task.id == task.id).update({
+                Task.success_count: success_count,
+                Task.fail_count: fail_count
+            })
+            
+            # 提交事务
+            print(f"提交事务，当前状态: 成功={success_count}, 失败={fail_count}")
+            db.commit()
         
-        # 任务完成
-        task.status = TaskStatus.COMPLETED
+        # 任务完成，显式更新数据库中的任务状态
+        success_count = simulator.success_count
+        fail_count = simulator.fail_count
+        print(f"模拟访问完成，总计数: 成功={success_count}, 失败={fail_count}")
+        db.query(Task).filter(Task.id == task.id).update({
+            Task.status: TaskStatus.COMPLETED,
+            Task.success_count: success_count,
+            Task.fail_count: fail_count
+        })
+        print(f"更新任务状态为: {TaskStatus.COMPLETED}")
+        db.commit()
     except Exception as e:
-        # 任务失败
-        task.status = TaskStatus.FAILED
+        # 任务失败，显式更新数据库中的任务状态
+        print(f"模拟访问失败: {str(e)}")
+        success_count = simulator.success_count
+        fail_count = simulator.fail_count
+        db.query(Task).filter(Task.id == task.id).update({
+            Task.status: TaskStatus.FAILED,
+            Task.success_count: success_count,
+            Task.fail_count: fail_count
+        })
+        # 创建失败结果
         task_result = TaskResult(
             task_id=task.id,
             status=ResultStatus.FAILURE,
@@ -141,9 +179,10 @@ def run_simulation(task_id: str, db: Session):
             message=f"任务失败: {str(e)}"
         )
         db.add(task_result)
-    finally:
-        # 只在最后提交一次事务
+        print(f"提交事务，状态更新为: {TaskStatus.FAILED}")
         db.commit()
+    finally:
+        print(f"任务执行完成: {task_id}")
 
 @app.post("/api/tasks", response_model=SimulationStatusResponse, status_code=201, summary="创建模拟访问任务")
 async def create_simulation_task(
