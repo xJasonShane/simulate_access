@@ -34,12 +34,3 @@ export interface SimulationStatus {
   updated_at: string;
   results: SimulationResult[];
 }
-
-export interface TaskListItem {
-  id: string;
-  url: string;
-  status: string;
-  success_count: number;
-  fail_count: number;
-  created_at: string;
-}

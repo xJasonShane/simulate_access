@@ -467,9 +467,13 @@ section h2::after {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 250px;
+  max-height: 400px;
   overflow-y: auto;
   padding-right: 8px;
+}
+
+.results-list {
+  min-height: 300px;
 }
 
 /* 自定义滚动条 */
@@ -501,6 +505,11 @@ section h2::after {
   border: 1px solid transparent;
   position: relative;
   overflow: hidden;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .result-item::before {
@@ -533,10 +542,25 @@ section h2::after {
   color: rgba(255, 255, 255, 0.6);
   font-style: italic;
   font-size: 0.9rem;
-  padding: 8px;
+  padding: 12px 18px;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.05);
   border: 1px dashed rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.result-more:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* 历史记录 */

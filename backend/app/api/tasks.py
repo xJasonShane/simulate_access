@@ -146,14 +146,6 @@ async def create_simulation_task(
     
     return task
 
-@router.get("", response_model=List[TaskListResponse], summary="获取所有任务列表")
-async def get_all_tasks(
-    db: Session = Depends(get_db)
-):
-    """获取所有任务列表，可按状态筛选"""
-    query = db.query(Task)
-    return query.order_by(Task.created_at.desc()).all()
-
 @router.get("/{task_id}", response_model=SimulationStatusResponse, summary="获取任务详情")
 async def get_task_detail(
     task_id: str,
@@ -165,18 +157,3 @@ async def get_task_detail(
         raise HTTPException(status_code=404, detail="任务不存在")
     
     return task
-
-@router.delete("/{task_id}", response_model=MessageResponse, summary="删除任务")
-async def delete_task(
-    task_id: str,
-    db: Session = Depends(get_db)
-):
-    """删除指定任务及其所有结果"""
-    task = db.query(Task).filter(Task.id == task_id).first()
-    if not task:
-        raise HTTPException(status_code=404, detail="任务不存在")
-    
-    db.delete(task)
-    db.commit()
-    
-    return {"message": "任务已成功删除"}

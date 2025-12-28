@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { SimulationStatus } from '../types';
 
 interface TaskMonitorProps {
@@ -6,6 +6,16 @@ interface TaskMonitorProps {
 }
 
 const TaskMonitor: React.FC<TaskMonitorProps> = ({ task }) => {
+  const [displayCount, setDisplayCount] = useState(5);
+
+  const handleShowMore = () => {
+    if (displayCount < task.results.length) {
+      setDisplayCount(Math.min(displayCount + 5, task.results.length));
+    } else {
+      setDisplayCount(5);
+    }
+  };
+
   return (
     <section className="monitor-section">
       <h2>实时监控</h2>
@@ -33,14 +43,19 @@ const TaskMonitor: React.FC<TaskMonitorProps> = ({ task }) => {
         <div className="results-list">
           <h4>访问结果:</h4>
           <ul>
-            {task.results.slice().reverse().slice(0, 5).map((result) => (
+            {task.results.slice().reverse().slice(0, displayCount).map((result) => (
               <li key={result.id} className={`result-item ${result.status === 'success' ? 'success' : 'fail'}`}>
                 {result.message}
               </li>
             ))}
-            {task.results.length > 5 && (
-              <li className="result-more">
-                ... 还有 {task.results.length - 5} 条结果
+            {task.results.length > displayCount && (
+              <li className="result-more" onClick={handleShowMore}>
+                ... 还有 {task.results.length - displayCount} 条结果，点击查看更多
+              </li>
+            )}
+            {displayCount > 5 && (
+              <li className="result-more" onClick={handleShowMore}>
+                点击收起，只显示最新 5 条结果
               </li>
             )}
           </ul>
