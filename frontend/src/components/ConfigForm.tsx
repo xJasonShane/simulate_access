@@ -23,6 +23,14 @@ const ConfigForm: React.FC<ConfigFormProps> = ({ onStartSimulation, isLoading })
       alert('请输入目标URL');
       return;
     }
+    
+    // 简单的URL验证
+    const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+    if (!urlPattern.test(config.url) && !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(config.url)) {
+      alert('请输入有效的URL或IP地址');
+      return;
+    }
+    
     onStartSimulation(config);
   };
 

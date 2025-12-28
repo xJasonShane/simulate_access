@@ -58,6 +58,7 @@ class AccessSimulator:
                 
                 message = f"成功 - 状态码: {response.status_code}"
                 self.logger.info(message)
+                self.success_count += 1
                 return (True, response.status_code, message)
                 
             except requests.exceptions.Timeout:
@@ -65,6 +66,7 @@ class AccessSimulator:
                 if retries > self.config.retries:
                     message = f"失败 - 请求超时（重试{self.config.retries}次后仍失败）"
                     self.logger.error(message)
+                    self.fail_count += 1
                     return (False, 0, message)
                 self.logger.warning(f"请求超时，{self.config.retry_delay}秒后重试 ({retries}/{self.config.retries})")
                 time.sleep(self.config.retry_delay)
@@ -74,6 +76,7 @@ class AccessSimulator:
                 if retries > self.config.retries:
                     message = f"失败 - 连接错误（重试{self.config.retries}次后仍失败）"
                     self.logger.error(message)
+                    self.fail_count += 1
                     return (False, 0, message)
                 self.logger.warning(f"连接错误，{self.config.retry_delay}秒后重试 ({retries}/{self.config.retries})")
                 time.sleep(self.config.retry_delay)
@@ -81,6 +84,7 @@ class AccessSimulator:
             except requests.exceptions.HTTPError as e:
                 message = f"失败 - HTTP错误: {str(e)}"
                 self.logger.error(message)
+                self.fail_count += 1
                 return (False, e.response.status_code if hasattr(e, 'response') else 0, message)
                 
             except requests.exceptions.RequestException as e:
@@ -88,6 +92,7 @@ class AccessSimulator:
                 if retries > self.config.retries:
                     message = f"失败 - {str(e)}（重试{self.config.retries}次后仍失败）"
                     self.logger.error(message)
+                    self.fail_count += 1
                     return (False, 0, message)
                 self.logger.warning(f"请求错误，{self.config.retry_delay}秒后重试 ({retries}/{self.config.retries})")
                 time.sleep(self.config.retry_delay)

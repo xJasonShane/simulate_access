@@ -35,12 +35,14 @@ class SimulationConfig(BaseModel):
     retries: int = Field(default=0, ge=0, description="重试次数")
     retry_delay: int = Field(default=1, ge=0, description="重试延迟(秒)")
 
+from datetime import datetime
+
 class SimulationResultResponse(BaseModel):
     id: int
     status: str
     status_code: int
     message: str
-    created_at: str
+    created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -56,8 +58,8 @@ class SimulationStatusResponse(BaseModel):
     status: str
     success_count: int
     fail_count: int
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     results: List[SimulationResultResponse]
     
     model_config = ConfigDict(from_attributes=True)
@@ -68,7 +70,7 @@ class TaskListResponse(BaseModel):
     status: str
     success_count: int
     fail_count: int
-    created_at: str
+    created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -84,7 +86,21 @@ def run_simulation(task_id: str, db: Session):
     
     # 初始化配置
     config = Config()
-    config.set_url(task.url)
+    
+    # 检查URL是否有效
+    if not config.set_url(task.url):
+        task.status = TaskStatus.FAILED
+        task_result = TaskResult(
+            task_id=task.id,
+            status=ResultStatus.FAILURE,
+            status_code=0,
+            message=f"无效的URL: {task.url}"
+        )
+        db.add(task_result)
+        db.commit()
+        db.refresh(task)
+        return
+    
     config.set_interval(task.min_interval, task.max_interval)
     config.set_count(task.count)
     config.set_timeout(task.timeout)
@@ -112,8 +128,6 @@ def run_simulation(task_id: str, db: Session):
             # 更新任务状态
             task.success_count = simulator.success_count
             task.fail_count = simulator.fail_count
-            db.commit()
-            db.refresh(task)
         
         # 任务完成
         task.status = TaskStatus.COMPLETED
@@ -128,8 +142,8 @@ def run_simulation(task_id: str, db: Session):
         )
         db.add(task_result)
     finally:
+        # 只在最后提交一次事务
         db.commit()
-        db.refresh(task)
 
 @app.post("/api/tasks", response_model=SimulationStatusResponse, status_code=201, summary="创建模拟访问任务")
 async def create_simulation_task(
