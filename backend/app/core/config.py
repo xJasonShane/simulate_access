@@ -1,6 +1,16 @@
 import re
-from typing import Optional
-from constants import DEFAULT_CONFIG
+import logging
+from constants import DEFAULT_CONFIG, LOG_CONFIG
+
+# 配置日志
+logging.basicConfig(
+    level=getattr(logging, LOG_CONFIG['level']),
+    format=LOG_CONFIG['format'],
+    handlers=[
+        logging.FileHandler(LOG_CONFIG['file'], encoding='utf-8'),
+        logging.StreamHandler()  # 添加控制台输出
+    ]
+)
 
 
 class Config:

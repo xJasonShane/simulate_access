@@ -3,7 +3,7 @@ import time
 import logging
 import requests
 from typing import Dict, Tuple
-from config import Config
+from ..core.config import Config
 from constants import USER_AGENTS, DEFAULT_HEADERS, LOG_CONFIG
 
 
@@ -17,16 +17,8 @@ class AccessSimulator:
         self.session = requests.Session()  # 使用会话提高性能
 
     def _setup_logger(self) -> logging.Logger:
-        """设置日志记录器"""
-        logger = logging.getLogger(__name__)
-        logger.setLevel(getattr(logging, LOG_CONFIG['level']))
-        
-        # 文件处理器
-        file_handler = logging.FileHandler(LOG_CONFIG['file'], encoding='utf-8')
-        file_handler.setFormatter(logging.Formatter(LOG_CONFIG['format']))
-        logger.addHandler(file_handler)
-        
-        return logger
+        """获取日志记录器"""
+        return logging.getLogger(__name__)
 
     def get_random_user_agent(self) -> str:
         """获取随机User-Agent"""
