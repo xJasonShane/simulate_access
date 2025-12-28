@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
-import { SimulationConfig, SimulationStatus, TaskListItem } from './types';
+import type { SimulationConfig, SimulationStatus, TaskListItem } from './types';
 import { startSimulation, getSimulationStatus, getAllTasks, deleteTask, getTaskDetails } from './api';
 import ConfigForm from './components/ConfigForm';
 import TaskMonitor from './components/TaskMonitor';
@@ -71,10 +71,10 @@ function App() {
 
   // 轮询获取任务状态
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    let intervalId: number;
 
     if (isPolling && currentTask?.id) {
-      intervalId = setInterval(async () => {
+      intervalId = window.setInterval(async () => {
         try {
           const updatedTask = await getSimulationStatus(currentTask.id);
           setCurrentTask(updatedTask);
@@ -93,7 +93,7 @@ function App() {
 
     return () => {
       if (intervalId) {
-        clearInterval(intervalId);
+        window.clearInterval(intervalId);
       }
     };
   }, [isPolling, currentTask?.id]);
@@ -125,7 +125,7 @@ function App() {
         {/* 历史记录 */}
         <TaskHistory
           tasks={tasks}
-          onViewTask={(task) => handleViewTask(task.id)}
+          onViewTask={handleViewTask}
           onDeleteTask={handleDeleteTask}
         />
       </main>

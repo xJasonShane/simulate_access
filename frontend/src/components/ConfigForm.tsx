@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SimulationConfig } from '../types';
+import type { SimulationConfig } from '../types';
 
 interface ConfigFormProps {
   onStartSimulation: (config: SimulationConfig) => void;

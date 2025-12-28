@@ -1,6 +1,6 @@
 // src/api.ts
 import axios from 'axios';
-import { SimulationConfig, SimulationStatus, TaskListItem } from './types';
+import type { SimulationConfig, SimulationStatus, TaskListItem } from './types';
 
 const API_BASE_URL = 'http://localhost:8000';
 

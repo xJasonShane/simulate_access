@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import threading
@@ -42,8 +42,7 @@ class SimulationResultResponse(BaseModel):
     message: str
     created_at: str
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SimulationStatusResponse(BaseModel):
     id: str
@@ -61,8 +60,7 @@ class SimulationStatusResponse(BaseModel):
     updated_at: str
     results: List[SimulationResultResponse]
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class TaskListResponse(BaseModel):
     id: str
@@ -72,8 +70,7 @@ class TaskListResponse(BaseModel):
     fail_count: int
     created_at: str
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class MessageResponse(BaseModel):
     message: str

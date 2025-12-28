@@ -1,16 +1,11 @@
 import React from 'react';
-import { SimulationStatus } from '../types';
+import type { SimulationStatus } from '../types';
 
 interface TaskMonitorProps {
   task: SimulationStatus;
 }
 
 const TaskMonitor: React.FC<TaskMonitorProps> = ({ task }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  };
-
   return (
     <section className="monitor-section">
       <h2>实时监控</h2>

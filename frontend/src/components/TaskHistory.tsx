@@ -1,9 +1,9 @@
 import React from 'react';
-import { SimulationStatus } from '../types';
+import type { TaskListItem } from '../types';
 
 interface TaskHistoryProps {
-  tasks: SimulationStatus[];
-  onViewTask: (task: SimulationStatus) => void;
+  tasks: TaskListItem[];
+  onViewTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
 }
 
@@ -49,7 +49,7 @@ const TaskHistory: React.FC<TaskHistoryProps> = ({ tasks, onViewTask, onDeleteTa
               <div className="task-actions">
                 <button
                   className="view-btn"
-                  onClick={() => onViewTask(task)}
+                  onClick={() => onViewTask(task.id)}
                 >
                   查看详情
                 </button>
